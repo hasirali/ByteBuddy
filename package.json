@@ -1,0 +1,19 @@
+{
+  "name": "devtinder-backend",
+  "version": "1.0.0",
+  "description": "Place for Connect to other Developers",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "nodejs",
+    "javascript"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.21.1",
+    "mongoose": "^8.7.3"
+  }
+}
