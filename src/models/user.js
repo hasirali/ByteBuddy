@@ -31,7 +31,6 @@ const userSchema = new mongoose.Schema({
 
     age: {
         type: Number,
-        required: true,
         min: 0, // Ensures age cannot be negative
         validate(value) {
             if (!Number.isInteger(value)) {
@@ -48,7 +47,6 @@ const userSchema = new mongoose.Schema({
 
     gender: {
         type: String,
-        required: true,
         enum: ["male", "female"], // Ensures gender is either 'male' or 'female'
     },
 
