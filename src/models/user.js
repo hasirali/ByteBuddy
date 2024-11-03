@@ -1,8 +1,9 @@
 const mongoose = require('mongoose');
-
+const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
 // crating a Schema
 const userSchema = new mongoose.Schema({
-     firstName: {
+    firstName: {
         type: String,
         required: true,
         trim: true, // Removes extra spaces at the start or end
@@ -72,9 +73,24 @@ const userSchema = new mongoose.Schema({
         type: [String],
     }
 
-},{
+}, {
     timestamps: true,
 })
+
+// Define methods on the schema
+userSchema.methods.getJWT = async function () {
+    const user = this;
+    const token = await jwt.sign({ _id: user._id }, "SecretKey@boss", { expiresIn: "7d" });
+    return token;
+};
+
+userSchema.methods.validatePassword = async function(passwordInputByUser) {
+    const user = this;
+    const passwordHash = user.password;
+    const isPasswordValid = await bcrypt.compare(passwordInputByUser, passwordHash);
+    return isPasswordValid;
+};
+
 // creating a user mode
 // mongoose.model("jo naam dena hai model ko", "aur uska format kaisa hoga[Schema that i will pass]")
 const UserModel = mongoose.model("User", userSchema);
