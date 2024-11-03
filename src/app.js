@@ -7,6 +7,7 @@ const bcrypt = require('bcrypt');
 const validator = require('validator');
 const cookiePareser = require('cookie-parser');
 const jwt = require('jsonwebtoken');
+const userAuth = require('./middlewares/auth');
 
 // Middleware
 app.use(express.json());
@@ -42,27 +43,10 @@ app.post('/signup', async (req, res) => {
 })
 
 // fetch a Single Profile
-app.get('/profile', async (req, res) => {
+app.get('/profile', userAuth, async (req, res) => {
     try {
-        const cookies = req.cookies;
-        const { token } = cookies; //destructuring karke cookie mai se token nikal liya fir , we will verify the token
-
-        if (!token) {
-            return res.status(400).send("Token not found");
-        }
-        
-        const decodedMessage = await jwt.verify(token, "SecretKey@boss");
-        console.log(decodedMessage);
-
-        const { _id } = decodedMessage;
-        console.log(_id); // yaha se user id mil gayi ab hum user id se user(profile) ko fetch karenge
-        const user = await User.findById(_id);
-        console.log(user);
-
-        if (!user) { // check to kare wo id wala user exist karta hai ya nahi
-            throw new Error("User not found");
-        }
-        res.send("validated")
+        const user = req.user;
+        res.send(user)
     }
     
     catch (err) {
@@ -91,8 +75,7 @@ app.post('/login', async (req, res) => {
 
             // 1. Create a JWT token
             const token =jwt.sign({ _id: user._id }, "SecretKey@boss")
-            console.log(token)
-            // return eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2NzI1MzQwNWMzZGE5MzVhNTFiZmFhYzUiLCJpYXQiOjE3MzA2NTExMjd9.brdPAqB_0vMZ0bveogZqu-bPjgpoVhRssTGQ7gTmoNU jisme meri user id aur secret key only devleoper knows
+
             // 2.add token to cookie and send back
             res.cookie("token", token)
 
