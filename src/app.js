@@ -1,129 +1,28 @@
 const express = require('express');
 const connectDB = require("./config/database");
 const app = express();
-const User = require('./models/user');
-const validateSignupData = require('./utils/validation');
-const bcrypt = require('bcrypt');
-const validator = require('validator');
 const cookieParser = require('cookie-parser');
 const jwt = require('jsonwebtoken');
-const userAuth = require('./middlewares/auth');
+// const bcrypt = require('bcrypt');
+// const User = require('./models/user');
+// const validateSignupData = require('./utils/validation');
+// const validator = require('validator');
+// const userAuth = require('./middlewares/auth');
+
 
 // Middleware
-app.use(express.json());
+app.use(express.json()); 
 app.use(cookieParser());
-// 
-// 
+app.use(express.json());
 
 
+const authRouter = require('./routes/auth');
+const profileRouter = require('./routes/profile');
+const requestRouter = require('./routes/request');  
 
-
-
-
-
-// Signup 
-app.post('/signup', async (req, res) => {
-    try {
-
-        // 1. Validation of Data
-        validateSignupData(req);
-        // 2. Encypt the password
-        const { firstName, lastName, emailId, password } = req.body;
-        const passwordHash = await bcrypt.hash(password, 8)
-
-        const user = new User({
-            firstName,
-            lastName,
-            emailId,
-            password: passwordHash,
-        })
-        await user.save();
-        res.send("User added Succesfully");
-
-
-    }
-    catch (err) {
-        res.status(400).send("ERROR : " + err.message);
-    }
-})
-
-// fetch a Single Profile
-app.get('/profile', userAuth, async (req, res) => {
-    try {
-        const user = req.user;
-        res.send(user)
-    }
-    
-    catch (err) {
-    res.status(400).send("Invalid Token")
-}
-
-})
-
-// login 
-app.post('/login', async (req, res) => {
-    try {
-        const { emailId, password } = req.body;
-
-        if (!validator.isEmail(emailId)) {
-            return res.status(400).send("Invalid email format");
-        }
-        const user = await User.findOne({ emailId: emailId });
-        if (!user) {
-            throw new Error("User not found with that email");
-        }
-
-        const isPasswordValid = await user.validatePassword(password);
-        if (isPasswordValid) {
-            // 1. Create a JWT token
-            // 2. Add the token to cookie and send the reposnse back to the user(client)
-
-            // 1. Create a JWT token
-            // const token = await jwt.sign({ _id: user._id }, "SecretKey@boss",{expireIn:"7d",}) offloaded to user.js 
-            const token = await user.getJWT();
-
-            // 2.add token to cookie and send back
-            res.cookie("token", token)
-
-
-            res.send("Login Successfull");
-        }
-        else {
-            res.status(400).send("Invalid Password");
-        }
-    }
-
-    catch (err) {
-        res.status(400).send("ERROR : " + err.message);
-    }
-})
-
-app.post('/sendConnectionRequest', userAuth, async (req, res) => {
-    // sending a connection request
-    const user = req.user;
-    console.log(user.firstName+"request send");
-    res.send("Connection Request Sent");
-});
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+app.use("/", authRouter);
+app.use("/", profileRouter);
+app.use("/", requestRouter);
 
 
 
