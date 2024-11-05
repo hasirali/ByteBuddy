@@ -1,7 +1,7 @@
 const express = require('express');
 const profileRouter = express.Router();
 const userAuth = require('../middlewares/auth');
-const { validateProfileEditData } = require('../utils/validation'); // Ensure both functions are exported
+const { validateProfileEditData ,validateSignupData} = require('../utils/validation'); // Ensure both functions are exported
 
 // Fetch a Single Profile
 profileRouter.get('/profile', userAuth, async (req, res) => {
