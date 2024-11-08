@@ -5,7 +5,7 @@ const ConnectionRequestModel = require('../models/connectionRequest'); // Import
 const UserModel = require('../models/user');
 const { connection } = require('mongoose');
 
-// Sending Connection Request
+// Sending Connection Request[Working]
 requestRouter.post('/request/send/:status/:touserId',
     userAuth,
     async (req, res) => {
@@ -21,20 +21,20 @@ requestRouter.post('/request/send/:status/:touserId',
 
 
             // check if a user is sending a request to himself
-            // if (fromUserId._id.toString() === toUserId.toString()) {
-            //     return res.status(400).json({ error: "You cannot send a request to yourself" });
-            // }
+            if (fromUserId._id.toString() === toUserId.toString()) {
+                return res.status(400).json({ error: "You cannot send a request to yourself" });
+            }
 
 
 
-            
+
             // check if ther toUserId is valid(mean real or fake)
             const toUser = await UserModel.findById(toUserId);
-            if(!toUser){
+            if (!toUser) {
                 return res.status(400).json({ error: "User Not Found" });
             }
-                
-            
+
+
 
             // check if there is already a pending request between the two users
             // also check if request is already sent by the other user to me(loggedIn user)
@@ -42,7 +42,7 @@ requestRouter.post('/request/send/:status/:touserId',
                 $or: [
                     // check if there is already a pending request between the two users
                     {
-                        toUserId,fromUserId 
+                        toUserId, fromUserId
                         // if toUseId and fromUserId already exist then we wont send req
 
 
@@ -57,10 +57,10 @@ requestRouter.post('/request/send/:status/:touserId',
                     }
                 ]
             })
-            if(existingConnectionRequest){
-                return res.status(400).send({message: "Request already sent"});
+            if (existingConnectionRequest) {
+                return res.status(400).send({ message: "Request already sent" });
             }
- 
+
 
             const connectionRequest = new ConnectionRequestModel({
                 fromUserId,
@@ -70,7 +70,7 @@ requestRouter.post('/request/send/:status/:touserId',
             const data = await connectionRequest.save();
 
             console.log(`${req.user.firstName} request sent`);
-        
+
             res.json({
                 message: req.user.firstName + " is " + status + " in " + toUser.firstName,
                 data,
@@ -83,42 +83,42 @@ requestRouter.post('/request/send/:status/:touserId',
     });
 
 
-//Responding to Connection Request
+//Responding to Connection Request[Working]
 requestRouter.post('/request/respond/:status/:requestId',
     userAuth,
-     async(req,res)=>{
-try{
-    const loggedInUser = req.user;
-    const {status,requestId} = req.params;
-    // or
-    // const requestId = req.params.requestId;
-    // const status = req.params.status;
-    const allowedStatus = ["accepted","rejected"];
+    async (req, res) => {
+        try {
+            const loggedInUser = req.user;
+            // const { status, requestId } = req.params;
+            // or
+            const requestId = req.params.requestId;
+            const status = req.params.status;
+            const allowedStatus = ["accepted", "rejected"];
 
-    if(!allowedStatus.includes(status)){
-        return res.status(400).send({message:"invalid status"});
-    }
+            if (!allowedStatus.includes(status)) {
+                return res.status(400).send({ message: "invalid status" });
+            }
 
-    const connectionRequest = await ConnectionRequestModel.findOne({
-        _id:requestId,
-        toUserId:loggedInUser._id,
-        status:"interested",
+            const connectionRequest = await ConnectionRequestModel.findOne({
+                _id: requestId,
+                toUserId: loggedInUser._id,
+                status: "interested",
+            })
+            // agar connectionRequest nahi mila toh
+            if (!connectionRequest) {
+                return res.status(400).json({ message: "Request not found" });
+            }
+
+            // if connectionRequest match
+            connectionRequest.status = status;
+            const data = await connectionRequest.save();
+            res.send({ message: "Request" + status, data });
+
+        }
+        catch (err) { 
+        res.status(400).json({ message: "Error: " + err.message });
+        }
     })
-    // agar connectionRequest nahi mila toh
-    if(!connectionRequest){
-        return res.status(400).send({message:"Request not found"});
-    }
-
-    // if connectionRequest match
-    connectionRequest.status = status;
-    const data = await connectionRequest.save();
-
-    res.send({message:"Request" +status,data});
-
-}
-catch(err){}
-res.send(400).json({message:"error: "+err.message});
-})
 
 module.exports = requestRouter;
 

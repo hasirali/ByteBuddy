@@ -65,7 +65,6 @@ const userSchema = new mongoose.Schema({
 
     about: {
         type: String,
-        default: "Hey there! I am using this app",
         maxlength: 150, // Optional character limit for about section
     },
 
