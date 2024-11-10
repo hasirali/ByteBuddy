@@ -3,6 +3,7 @@ const userRouter = express.Router();
 const userAuth = require('../middlewares/auth')
 const connectionRequestModel = require('../models/connectionRequest');
 const { connection } = require('mongoose');
+const UserModel = require('../models/user');
 
 
 // api to get all the pending requests of a loggedInUser user[working]
@@ -81,13 +82,16 @@ userRouter.get('/user/feed', userAuth, async (req, res) => {
         })
         // console.log(hideUserFromFeed);
 
-        // find all the users who are not in the hideUserFromFeed
+        // find all the users who are not in the hideUserFromFeed sd
         const user = await UserModel.find({
-            _id: {$nin: Array.from(hideUserFromFeed)}  //id is NotIn the array hideUserFromFeed
-        })
+          $and: [ 
+            { _id: {$nin: Array.from(hideUserFromFeed)}} ,  //id is NotIn the array hideUserFromFeed
+            { _id: {$ne: loggedInUser._id}} // id is not equal to loggedInUser
+        ],
+        }).select("firstName lastName photoUrl bio skills")
         res.json({
             message: "data Fetched Successfully",
-            data: connectionRequests
+            data: user,
         })
     }
 
