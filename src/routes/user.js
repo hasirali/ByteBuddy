@@ -57,10 +57,13 @@ userRouter.get('/user/connections', userAuth, async (req, res) => {
 })
 
 // api to build feed page
-userRouter.get('/user/feed', userAuth, async (req, res) => {
-
-
+userRouter.get('/feed', userAuth, async (req, res) => {
     try {
+        // pagination formual and stuffs
+        const page = parseInt(req.query.page) || 1;
+        let limit = parseInt(req.query.limit) || 10; // limit is initially defined as a const, which doesn’t allow reassignment.
+        limit = limit > 50 ? 50 : limit; // limit the number of post to 50
+        const skip = (page-1)*limit; 
         // not seeing my own Profile(Card)
         // not seeing the post of the user i already send intreseted or ignored
         // not seeing the post of the user who i have already connected
@@ -88,7 +91,7 @@ userRouter.get('/user/feed', userAuth, async (req, res) => {
             { _id: {$nin: Array.from(hideUserFromFeed)}} ,  //id is NotIn the array hideUserFromFeed
             { _id: {$ne: loggedInUser._id}} // id is not equal to loggedInUser
         ],
-        }).select("firstName lastName photoUrl bio skills")
+        }).select("firstName lastName photoUrl bio skills").skip(skip).limit(limit)
         res.json({
             message: "data Fetched Successfully",
             data: user,
