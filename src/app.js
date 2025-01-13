@@ -3,6 +3,7 @@ const connectDB = require("./config/database");
 const app = express();
 const cookieParser = require('cookie-parser');
 const jwt = require('jsonwebtoken');
+const cors = require('cors');
 // const bcrypt = require('bcrypt');
 // const User = require('./models/user');
 // const validateSignupData = require('./utils/validation');
@@ -11,10 +12,10 @@ const jwt = require('jsonwebtoken');
 
 
 // Middleware
+app.use(cors());
 app.use(express.json()); 
 app.use(cookieParser());
 app.use(express.json());
-
 
 const authRouter = require('./routes/auth');
 const profileRouter = require('./routes/profile');
